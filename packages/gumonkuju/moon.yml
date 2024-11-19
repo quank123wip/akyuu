@@ -1,0 +1,17 @@
+type: 'application'
+language: 'typescript'
+
+project:
+  name: 'gumonkuju'
+  description: 'The frontend of akyuu.'
+  owner: 'quank123wip'
+  maintainers: ['quank123wip']
+
+tasks:
+  build:
+    command: 'pnpm build'
+    inputs:
+      - 'src/**/*'
+    outputs:
+      - 'dist'
+
