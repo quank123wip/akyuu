@@ -1,0 +1,5 @@
+{
+	"dependencies": {
+		"@milkdown/plugin-math": "^7.5.0"
+	}
+}

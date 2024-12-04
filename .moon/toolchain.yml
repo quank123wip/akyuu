@@ -1,0 +1,13 @@
+$schema: 'https://moonrepo.dev/schemas/toolchain.json'
+
+node:
+  version: '20.15.0'
+  packageManager: 'pnpm'
+  pnpm:
+    version: "9.5.0"
+
+rust:
+  version: '1.81.0'
+  components:
+    - 'rust-docs'
+    - 'rust-analyzer'

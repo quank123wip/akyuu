@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "packages/suzunaan",
+    "packages/suzunaan/src/migration"
+]
