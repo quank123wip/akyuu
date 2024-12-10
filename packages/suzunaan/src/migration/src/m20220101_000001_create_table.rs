@@ -27,7 +27,7 @@ impl MigrationTrait for Migration {
                     .table(Post::Table)
                     .if_not_exists()
                     .col(pk_auto(Post::Index))
-                    .col(ColumnDef::new(Post::Id).text())
+                    .col(ColumnDef::new(Post::Id).text().not_null())
                     .col(ColumnDef::new(Post::Title).text())
                     .col(ColumnDef::new(Post::Text).text())
                     .col(ColumnDef::new(Post::Author).text())
@@ -49,6 +49,7 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(Post::Permission)
                             .enumeration(Alias::new("permission"), Permission::iter())
+                            .not_null()
                             .default("Public"),
                     )
                     .to_owned(),

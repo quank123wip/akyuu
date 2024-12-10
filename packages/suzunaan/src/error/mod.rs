@@ -4,11 +4,13 @@ use axum::{
 };
 use std::fmt;
 
-// 定义一个简单的错误枚举
 #[derive(Debug)]
 pub enum AppError {
     DatabaseError(String),
     NotFound,
+    Unauthorized,
+    AlreadyExists,
+    BadRequest(String),
 }
 
 impl fmt::Display for AppError {
@@ -16,16 +18,21 @@ impl fmt::Display for AppError {
         match *self {
             AppError::DatabaseError(ref msg) => write!(f, "Database error: {}", msg),
             AppError::NotFound => write!(f, "404 Resource not found"),
+            AppError::Unauthorized => write!(f, "401 Unauthorized"),
+            AppError::AlreadyExists => write!(f, "Resource already exists"),
+            AppError::BadRequest(ref msg) => write!(f, "Bad request: {}", msg),
         }
     }
 }
 
-// 实现IntoResponse trait以便自定义错误可以被自动转换为HTTP响应
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let status_code = match self {
             AppError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             AppError::NotFound => StatusCode::NOT_FOUND,
+            AppError::Unauthorized => StatusCode::UNAUTHORIZED,
+            AppError::AlreadyExists => StatusCode::CONFLICT, 
+            AppError::BadRequest(_) => StatusCode::BAD_REQUEST, 
         };
 
         let body = format!("{}", self);

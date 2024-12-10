@@ -4,13 +4,13 @@ use super::sea_orm_active_enums::Permission;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "post")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub index: i32,
-    #[sea_orm(column_type = "Text", nullable)]
-    pub id: Option<String>,
+    #[sea_orm(column_type = "Text")]
+    pub id: String,
     #[sea_orm(column_type = "Text", nullable)]
     pub title: Option<String>,
     #[sea_orm(column_type = "Text", nullable)]
@@ -25,7 +25,7 @@ pub struct Model {
     pub password: Option<String>,
     pub created_at: DateTime,
     pub updated_at: DateTime,
-    pub permission: Option<Permission>,
+    pub permission: Permission,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
