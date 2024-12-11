@@ -17,6 +17,33 @@ pub struct GetPost {
     pub password: Option<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ResPost {
+    pub title: String,
+    pub text: String,
+    pub author: Option<String>,
+    pub author_email: Option<String>,
+    pub permission: Permission, 
+    #[serde(rename = "created_at")]
+    pub created_at: prelude::DateTime, // Assuming the Post model has a `created_at` field of type DateTime
+    #[serde(rename = "updated_at")]
+    pub updated_at: prelude::DateTime, // Assuming the Post model has an `updated_at` field of type DateTime
+}
+
+impl From<post::Model> for ResPost {
+    fn from(model: post::Model) -> Self {
+        ResPost {
+            title: model.title.unwrap_or(String::from("Untitled")),
+            text: model.text.unwrap_or(String::from("")),
+            author: model.author,
+            author_email: model.author_email,
+            permission: model.permission, 
+            created_at: model.created_at.into(), // Convert DateTime to prelude::DateTime
+            updated_at: model.updated_at.into(), // Convert DateTime to prelude::DateTime
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NewPost {
     #[serde(rename = "title", default)]
@@ -48,25 +75,25 @@ pub async fn get_post_by_id(
     State(state): State<AppState>,
     Path(id): Path<String>,
     Json(payload): Json<GetPost>,
-) -> Result<Json<serde_json::Value>, AppError> {
+) -> Result<Json<ResPost>, AppError> {
     let post = Post::find()
         .filter(post::Column::Id.eq(id))
         .one(&state.db)
         .await;
     match post {
         Ok(Some(p)) => match p.permission {
-            Permission::Public => Ok(Json(serde_json::json!(p))),
+            Permission::Public => Ok(Json(p.into())),
             Permission::Private => {
                 if payload
                     .secret
                     .is_some_and(|x| x == *p.secret.as_ref().unwrap_or(&String::new()))
                 {
-                    Ok(Json(serde_json::json!(p)))
+                    Ok(Json(p.into()))
                 } else if payload
                     .password
                     .is_some_and(|x| x == *p.password.as_ref().unwrap_or(&String::new()))
                 {
-                    Ok(Json(serde_json::json!(p)))
+                    Ok(Json(p.into()))
                 } else {
                     Err(AppError::Unauthorized)
                 }
@@ -76,7 +103,7 @@ pub async fn get_post_by_id(
                     .secret
                     .is_some_and(|x| x == *p.secret.as_ref().unwrap_or(&String::new()))
                 {
-                    Ok(Json(serde_json::json!(p)))
+                    Ok(Json(p.into()))
                 } else {
                     Err(AppError::Unauthorized)
                 }
