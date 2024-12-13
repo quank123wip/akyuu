@@ -5,6 +5,23 @@ use axum::{
 use std::fmt;
 
 #[derive(Debug)]
+pub enum ServerError {
+    DatabaseError,
+    NetworkError,
+    IOError,
+}
+
+impl fmt::Display for ServerError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            ServerError::DatabaseError => write!(f, "An error occurred with the database"),
+            ServerError::NetworkError => write!(f, "A network error occurred"),
+            ServerError::IOError => write!(f, "An I/O error occurred"),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub enum AppError {
     DatabaseError(String),
     NotFound,

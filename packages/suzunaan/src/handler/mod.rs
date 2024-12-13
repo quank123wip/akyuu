@@ -1,5 +1,7 @@
-use axum::http::StatusCode;
-use axum::{extract::Json, extract::Path, extract::State};
+use axum::{
+    extract::{Json, Query, Path, State},
+    http::StatusCode,
+};
 use sea_orm::*;
 use serde_json::json;
 
@@ -23,7 +25,7 @@ pub struct ResPost {
     pub text: String,
     pub author: Option<String>,
     pub author_email: Option<String>,
-    pub permission: Permission, 
+    pub permission: Permission,
     #[serde(rename = "created_at")]
     pub created_at: prelude::DateTime, // Assuming the Post model has a `created_at` field of type DateTime
     #[serde(rename = "updated_at")]
@@ -37,7 +39,7 @@ impl From<post::Model> for ResPost {
             text: model.text.unwrap_or(String::from("")),
             author: model.author,
             author_email: model.author_email,
-            permission: model.permission, 
+            permission: model.permission,
             created_at: model.created_at.into(), // Convert DateTime to prelude::DateTime
             updated_at: model.updated_at.into(), // Convert DateTime to prelude::DateTime
         }
@@ -71,10 +73,10 @@ pub async fn greet(State(state): State<AppState>) -> String {
     state.config.greet_message.clone()
 }
 
-pub async fn get_post_by_id(
+pub async fn get_post_by_id_with_json(
     State(state): State<AppState>,
     Path(id): Path<String>,
-    Json(payload): Json<GetPost>,
+    Query(payload): Query<GetPost>,
 ) -> Result<Json<ResPost>, AppError> {
     let post = Post::find()
         .filter(post::Column::Id.eq(id))
@@ -114,6 +116,24 @@ pub async fn get_post_by_id(
     }
 }
 
+fn set_from_payload(post: &mut post::ActiveModel, payload: NewPost) {
+    if payload.title.is_some() {
+        post.title = Set(payload.title);
+    }
+    if payload.text.is_some() {
+        post.text = Set(payload.text);
+    }
+    if payload.author.is_some() {
+        post.author = Set(payload.author);
+    }
+    if payload.author_email.is_some() {
+        post.author_email = Set(payload.author_email);
+    }
+    if payload.permission.is_some() {
+        post.permission = Set(payload.permission.unwrap());
+    }
+}
+
 pub async fn post_post_by_id(
     State(state): State<AppState>,
     Path(id): Path<String>,
@@ -123,31 +143,31 @@ pub async fn post_post_by_id(
         .filter(post::Column::Id.eq(id.clone()))
         .one(&state.db)
         .await;
-    
-    if payload.title.is_none() && 
-       payload.text.is_none() && 
-       payload.author.is_none() && 
-       payload.author_email.is_none() && 
-       payload.secret.is_none() && 
-       payload.password.is_none() &&
-       payload.permission.is_none() {
+
+    if payload.title.is_none()
+        && payload.text.is_none()
+    {
         return Err(AppError::BadRequest("Payload is empty".to_string()));
     }
-    
+
     match query {
         Ok(Some(p)) => match p.permission {
             Permission::Public => {
                 let mut post = p.into_active_model();
-                post.set_from_json(json!(payload)).unwrap_err();
+                set_from_payload(&mut post, payload);
                 match post.update(&state.db).await {
                     Ok(_) => Ok(StatusCode::OK),
                     Err(e) => Err(AppError::DatabaseError(e.to_string())),
                 }
             }
             _ => {
-                if payload.clone().secret.is_some_and(|x| x == *p.secret.as_ref().unwrap_or(&String::new())) {
+                if payload
+                    .clone()
+                    .secret
+                    .is_some_and(|x| x == *p.secret.as_ref().unwrap_or(&String::new()))
+                {
                     let mut post = p.into_active_model();
-                    post.set_from_json(json!(payload)).unwrap_err();
+                    set_from_payload(&mut post, payload);
                     match post.update(&state.db).await {
                         Ok(_) => Ok(StatusCode::OK),
                         Err(e) => Err(AppError::DatabaseError(e.to_string())),
@@ -171,7 +191,7 @@ pub async fn post_post_by_id(
                 secret: ActiveValue::NotSet,
                 password: ActiveValue::NotSet,
             };
-            post.set_from_json(json!(payload)).unwrap_err();
+            set_from_payload(&mut post, payload);
             match post.insert(&state.db).await {
                 Ok(_) => Ok(StatusCode::CREATED),
                 Err(e) => Err(AppError::DatabaseError(e.to_string())),
@@ -208,7 +228,10 @@ pub async fn delete_post_by_id(
                         Err(e) => Err(AppError::DatabaseError(e.to_string())),
                     },
                     _ => {
-                        if payload.secret.is_some_and(|x| x == secret.unwrap_or(String::new())) {
+                        if payload
+                            .secret
+                            .is_some_and(|x| x == secret.unwrap_or(String::new()))
+                        {
                             match Post::delete_many()
                                 .filter(post::Column::Id.eq(id))
                                 .exec(&state.db)
