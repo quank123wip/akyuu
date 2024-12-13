@@ -9,7 +9,7 @@ use crate::handler;
 pub fn setup_routes(state: AppState) -> Router {
     Router::new()
         .route("/", get(handler::greet))
-        .route("/:id", get(handler::get_post_by_id).post(handler::post_post_by_id).put(handler::post_post_by_id).delete(handler::delete_post_by_id))
+        .route("/:id", get(handler::get_post_by_id_with_json).post(handler::post_post_by_id).put(handler::post_post_by_id).delete(handler::delete_post_by_id))
         .with_state(state)
 }
 
