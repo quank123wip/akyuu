@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, useTemplateRef, computed } from 'vue';
+import { onMounted, ref, useTemplateRef, computed, watch } from 'vue';
 import { Crepe } from '@milkdown/crepe';
 import { automd } from '@milkdown/plugin-automd';
 import "@milkdown/crepe/theme/common/style.css";
@@ -162,6 +162,13 @@ onMounted(async () => {
     title.value = postData.title;
 
     text.value = postData.text;
+
+    watch(title, (newTitle, oldTitle) => {
+        if (newTitle !== oldTitle) {
+            status.beginLoading();
+            updatePost();
+        }
+    })
 
     crepe = new Crepe({
         root: editor.value,
