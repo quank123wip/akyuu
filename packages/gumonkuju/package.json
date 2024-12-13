@@ -17,14 +17,19 @@
   },
   "dependencies": {
     "@milkdown/crepe": "^7.5.7",
+    "@milkdown/kit": "^7.5.5",
+    "@milkdown/plugin-automd": "^7.5.0",
+    "@vueuse/core": "^12.0.0",
     "pinia": "^2.2.6",
     "vue": "^3.5.12",
     "vue-router": "^4.4.5"
   },
   "devDependencies": {
+    "@iconify-json/line-md": "^1.2.3",
     "@playwright/test": "^1.48.2",
     "@tsconfig/node22": "^22.0.0",
     "@types/node": "^22.9.0",
+    "@unocss/preset-icons": "^0.65.1",
     "@vitejs/plugin-vue": "^5.1.4",
     "@vitejs/plugin-vue-jsx": "^4.0.1",
     "@vue/eslint-config-prettier": "^10.1.0",
@@ -38,6 +43,7 @@
     "oxlint": "^0.11.0",
     "prettier": "^3.3.3",
     "typescript": "~5.6.3",
+    "unocss": "^0.65.1",
     "vite": "^5.4.10",
     "vite-plugin-vue-devtools": "^7.5.4",
     "vue-tsc": "^2.1.10"

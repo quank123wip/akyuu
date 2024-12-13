@@ -13,7 +13,7 @@ body {
 #app {
   height: 100vh;
   width: 100vw;
-  overflow: scroll;
+  overflow: auto;
   display: grid;
 }
 </style>
